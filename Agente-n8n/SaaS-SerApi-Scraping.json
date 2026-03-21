@@ -1,0 +1,276 @@
+{
+  "name": "SaaS-SerApi-Scraping",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "saas-scraper",
+        "options": {}
+      },
+      "id": "d2995bde-9c23-4f3a-85e0-d779756e61f8",
+      "name": "Webhook (Desde App)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        208,
+        48
+      ],
+      "webhookId": "d0052355-785e-4367-bd2c-28d2385bd316"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google_maps"
+            },
+            {
+              "name": "q",
+              "value": "={{ $json.body.query }}"
+            },
+            {
+              "name": "google_domain",
+              "value": "google.com"
+            },
+            {
+              "name": "hl",
+              "value": "es"
+            },
+            {
+              "name": "api_key",
+              "value": "3bc8a7d401a93374ea165eacd14863959eb8dd6d44f268d4c8556b66e3999e49"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "paginationMode": "responseContainsNextURL",
+              "nextURL": "={{$response.body.serpapi_pagination.next}}",
+              "limitPagesFetched": true,
+              "maxRequests": 9,
+              "requestInterval": 1500
+            }
+          }
+        }
+      },
+      "id": "471ddd6f-40ae-451f-9604-e8d9452662a3",
+      "name": "SerpApi Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        432,
+        48
+      ],
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "local_results",
+        "options": {}
+      },
+      "id": "003946ed-16e6-4b3d-8d45-fbc0f10d900b",
+      "name": "Split Local Results",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 2.1,
+      "position": [
+        656,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "nombre",
+              "value": "={{$json[\"title\"]}}"
+            },
+            {
+              "name": "direccion",
+              "value": "={{$json[\"address\"]}}"
+            },
+            {
+              "name": "telefono",
+              "value": "={{$json.phone || null}}"
+            },
+            {
+              "name": "web",
+              "value": "={{$json.website || null}}"
+            },
+            {
+              "name": "tipo",
+              "value": "={{$json.type || null}}"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $('Webhook (Desde App)').item.json.body.user_id }}"
+            },
+            {
+              "name": "query",
+              "value": "={{ $('Webhook (Desde App)').item.json.body.query }}"
+            },
+            {
+              "name": "search_parameters",
+              "value": "={{ $('SerpApi Request').item.json.search_parameters }}"
+            },
+            {
+              "name": "search_id",
+              "value": "={{ $('Webhook (Desde App)').item.json.body.search_id }}"
+            }
+          ],
+          "number": [
+            {
+              "name": "rating",
+              "value": "={{$json[\"rating\"]}}"
+            },
+            {
+              "name": "reviews",
+              "value": "={{$json[\"reviews\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4ad2c430-a001-46e9-bade-0be5e3b30576",
+      "name": "Clean Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        880,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "scraped_leads",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.user_id || null}}"
+            },
+            {
+              "fieldId": "nombre",
+              "fieldValue": "={{ $json.nombre || \"\"}}"
+            },
+            {
+              "fieldId": "direccion",
+              "fieldValue": "={{ $json.direccion || \"\"}}"
+            },
+            {
+              "fieldId": "telefono",
+              "fieldValue": "={{ $json.telefono|| null }}"
+            },
+            {
+              "fieldId": "web",
+              "fieldValue": "={{ $json.web || null}}"
+            },
+            {
+              "fieldId": "rating",
+              "fieldValue": "={{ $json.rating || 0 }}"
+            },
+            {
+              "fieldId": "reviews",
+              "fieldValue": "={{ $json.reviews || 0 }}"
+            },
+            {
+              "fieldId": "tipo",
+              "fieldValue": "={{ $json.tipo || null}}"
+            },
+            {
+              "fieldId": "search_parameters",
+              "fieldValue": "={{ $json.search_parameters }}"
+            },
+            {
+              "fieldId": "query",
+              "fieldValue": "={{ $json.query }}"
+            },
+            {
+              "fieldId": "search_id",
+              "fieldValue": "={{ $json.search_id }}"
+            }
+          ]
+        }
+      },
+      "id": "86cbd5b1-8e98-45f8-b07d-c5af3eefbefb",
+      "name": "Guardar en Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        48
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "1CKlHXJAjNCdParf",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook (Desde App)": {
+      "main": [
+        [
+          {
+            "node": "SerpApi Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpApi Request": {
+      "main": [
+        [
+          {
+            "node": "Split Local Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Local Results": {
+      "main": [
+        [
+          {
+            "node": "Clean Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Data": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "066c3945-0299-44b9-a8cc-8838f96d8055",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "nRbuMKCVxaeeZaC5",
+  "tags": []
+}
