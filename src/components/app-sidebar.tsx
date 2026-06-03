@@ -21,6 +21,7 @@ const items = [
   { title: "Panorámica", url: "/dashboard", icon: Home },
   { title: "Buscador Leads (n8n)", url: "/dashboard/scraping", icon: Search },
   { title: "Agentes de Voz", url: "/dashboard/agents", icon: Mic },
+  { title: "Agentes de Chat", url: "/dashboard/chat-agents", icon: Bot },
   { title: "Flujos n8n", url: "/dashboard/workflows", icon: Bot },
   { title: "Clientes", url: "/dashboard/users", icon: Users },
   { title: "Configuración", url: "/dashboard/settings", icon: Settings },
